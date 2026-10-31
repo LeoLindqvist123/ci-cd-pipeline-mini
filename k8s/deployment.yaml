@@ -5,7 +5,7 @@ metadata:
   labels:
     app: churn-api
   annotations:
-    kubernetes.io/change-cause: "Retrain model with C=0.5 (06a00be)"
+      kubernetes.io/change-cause: "ARM build of retrained model (76c54fa)"
 spec:
   replicas: 2
   selector:
@@ -23,14 +23,14 @@ spec:
     spec:
       containers:
         - name: churn-api
-          image: ghcr.io/leolindqvist123/ci-cd-pipeline-mini/churn-api:06a00beb5707c893f63bd71f6704ad6257efe5c9
+          image: ghcr.io/leolindqvist123/ci-cd-pipeline-mini/churn-api:76c54fa2c207111b6f0453833edb34ef0a7236c6
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 128Mi
             limits:
               cpu: 500m
               memory: 512Mi
