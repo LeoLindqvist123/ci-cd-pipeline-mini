@@ -332,3 +332,34 @@ jobs:
         with:
           name: call-list-${{ github.sha }}
           path: outputs/call_list.csv
+    
+  deploy:
+    name: Deploy to Kubernetes
+    needs: package
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: Deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v4
+
+      - name: Write kubeconfig from secret
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        run: |
+          mkdir -p ~/.kube
+          printf '%s' "$KUBECONFIG_DATA" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Point manifest to this commit's image
+        run: |
+          IMAGE=ghcr.io/leolindqvist123/ci-cd-pipeline-mini/churn-api:${{ github.sha }}
+          sed -i "s|image: .*churn-api:.*|image: ${IMAGE}|" k8s/deployment.yaml
+          sed -i "s|kubernetes.io/change-cause: .*|kubernetes.io/change-cause: \"CI deploy ${{ github.sha }}\"|" k8s/deployment.yaml
+          grep -n "image:\|change-cause" k8s/deployment.yaml
+
+      - name: Deploy to cluster
+        run: |
+          kubectl apply -f k8s/ -n leo-lindqvist
+          kubectl rollout status deployment/churn-api -n leo-lindqvist --timeout=180s
