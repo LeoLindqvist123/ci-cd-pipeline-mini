@@ -4,6 +4,8 @@ metadata:
   name: churn-api
   labels:
     app: churn-api
+  annotations:
+    kubernetes.io/change-cause: "Retrain model with C=0.5 (06a00be)"
 spec:
   replicas: 2
   selector:
@@ -21,7 +23,7 @@ spec:
     spec:
       containers:
         - name: churn-api
-          image: churn-api:127e522b9eff3446de983cf0d6ed0806f7e4b159
+          image: ghcr.io/leolindqvist123/ci-cd-pipeline-mini/churn-api:06a00beb5707c893f63bd71f6704ad6257efe5c9
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
